@@ -1,0 +1,21 @@
+{
+    "name": "天气查询",
+    "description": "天气插件可以提供天气相关信息。你可以提供指定的地点信息、指定的时间点或者时间段信息，来检索诗词库，精准检索到天气信息。",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "location": {
+                "type": "string",
+                "description": "地点，比如北京。"
+            },
+            "date": {
+                "type": "string",
+                "description": "日期。"
+            }
+        },
+        "required": [
+            "location",
+            "date"
+        ]
+    }
+}

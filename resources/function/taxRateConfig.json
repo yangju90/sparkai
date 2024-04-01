@@ -1,0 +1,20 @@
+{
+    "name": "税率查询",
+    "description": "税率查询可以查询某个地方的个人所得税率情况。你可以提供指定的地点信息、指定的时间点，精准检索到所得税率。",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "location": {
+                "type": "string",
+                "description": "地点，比如北京。"
+            },
+            "date": {
+                "type": "string",
+                "description": "日期。"
+            }
+        },
+        "required": [
+            "location"
+        ]
+    }
+}
