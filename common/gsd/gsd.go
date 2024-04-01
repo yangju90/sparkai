@@ -15,7 +15,6 @@ func GracefulShutdown(appName string) {
 	sig := <-c
 	log.Printf("Received signal: %v\n", sig)
 
-	// 执行一些清理操作，然后关闭程序
 	log.Println("Cleaning up...")
 	// 这里可以执行一些清理工作，比如关闭文件、释放资源等
 
