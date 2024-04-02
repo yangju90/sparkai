@@ -19,7 +19,15 @@ func WaitUserInput(conn *websocket.Conn, appid string) {
 		text = "你是谁，可以干什么？"
 	}
 	data := GenParams1(appid, text, true)
-	conn.WriteJSON(data)
+
+	byteData, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println("map cast byte error ", err)
+		return
+	}
+
+	conn.WriteMessage(1, byteData)
+	// conn.WriteJSON(data)
 }
 
 func WaitSparkaiOutput(conn *websocket.Conn) {
@@ -62,8 +70,8 @@ func WaitSparkaiOutput(conn *websocket.Conn) {
 			temp := usage["text"].(map[string]interface{})
 			totalTokens := temp["total_tokens"].(float64)
 			fmt.Println("total_tokens:", totalTokens)
-			conn.Close()
-			break
+			// conn.Close()
+			// break
 		}
 
 	}
@@ -139,9 +147,6 @@ func GenParams1(appid, question string, first bool) map[string]interface{} {
 	if first && err == nil {
 		payload := data["payload"].(map[string]interface{})
 		payload["functions"] = functions
-
-		fmt.Println(functions)
-
 		fmt.Println("Register function call!")
 	}
 	return data

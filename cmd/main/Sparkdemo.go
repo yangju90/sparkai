@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"sparkai/common/gsd"
@@ -18,7 +19,7 @@ import (
 )
 
 // WebSocket 配置文件信息
-
+// Sparkai 每次发送完信息后，服务器会关闭连接
 func main() {
 	// 解析配置文件
 	var wssConfig WssConfig
@@ -39,6 +40,17 @@ func main() {
 	}
 
 	defer conn.Close()
+
+	go func() {
+		for {
+			time.Sleep(30 * time.Second) // 每隔 30 秒发送一次心跳消息
+			err := conn.WriteMessage(websocket.PingMessage, []byte{})
+			if err != nil {
+				log.Println("发送心跳消息时发生错误:", err)
+				return
+			}
+		}
+	}()
 
 	go func() {
 		fmt.Println("执行发送任务...")
