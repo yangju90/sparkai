@@ -70,8 +70,8 @@ func WaitSparkaiOutput(conn *websocket.Conn) {
 			temp := usage["text"].(map[string]interface{})
 			totalTokens := temp["total_tokens"].(float64)
 			fmt.Println("total_tokens:", totalTokens)
-			// conn.Close()
-			// break
+			conn.Close()
+			break
 		}
 
 	}
