@@ -3,9 +3,12 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"sparkai/common/gsd"
 	"sparkai/internal/sparkaiservice"
 	"sparkai/model/wssconfig"
+
+	commandIO "sparkai/common/io"
 
 	"gopkg.in/yaml.v2"
 )
@@ -17,8 +20,32 @@ func main() {
 	var wssConfig wssconfig.WssConfig
 	readAppConfig(&wssConfig)
 
-	go sparkaiservice.Wsservice(&wssConfig)
+	sessionId := "1"
+
+	c := make(chan int)
+	defer func() {
+		c <- 0
+	}()
+
+	go func() {
+		for {
+			text, err := commandIO.WaitCommandInput()
+			if err != nil {
+				log.Println("Command Input message error:", err)
+			}
+			select {
+			case <-c:
+				log.Println("param exit!")
+				return
+			default:
+				sparkaiservice.Wsservice(&wssConfig, sessionId, text)
+			}
+
+		}
+	}()
+
 	gsd.GracefulShutdown("sparkai")
+
 }
 
 func readAppConfig(wssConfig *wssconfig.WssConfig) {

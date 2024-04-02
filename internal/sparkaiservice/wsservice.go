@@ -18,7 +18,9 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func Wsservice(wssConfig *wssconfig.WssConfig) {
+func Wsservice(wssConfig *wssconfig.WssConfig, sessionId string, text string) {
+	// sessionId 处理历史数据
+
 	d := websocket.Dialer{
 		HandshakeTimeout: 5 * time.Second,
 	}
@@ -33,14 +35,15 @@ func Wsservice(wssConfig *wssconfig.WssConfig) {
 
 	defer conn.Close()
 
-	c := make(chan int)
-	defer func() {
-		c <- 0
-	}()
+	// goroutine 方法调用，可以维持wss通道不失效
+	// c := make(chan int)
+	// defer func() {
+	// 	c <- 0
+	// }()
 
-	go heartbeat(c, conn)
+	// go heartbeat(c, conn)
 
-	go io.WaitUserInput(conn, wssConfig.Appid)
+	go io.WaitUserInput(conn, wssConfig.Appid, text)
 
 	io.WaitSparkaiOutput(conn)
 }

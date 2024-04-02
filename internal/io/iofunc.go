@@ -3,21 +3,17 @@ package io
 import (
 	"encoding/json"
 	"fmt"
+	"sparkai/model/constant"
 
 	"github.com/gorilla/websocket"
-
-	commandIO "sparkai/common/io"
-	resources "sparkai/resources"
-
-	"embed"
 )
 
-func WaitUserInput(conn *websocket.Conn, appid string) {
-	text, err := commandIO.WaitCommandInput()
-	if err != nil {
-		fmt.Println("Command Input message error:", err)
+func WaitUserInput(conn *websocket.Conn, appid string, text string) {
+
+	if len(text) == 0 {
 		text = "你是谁，可以干什么？"
 	}
+
 	data := GenParams1(appid, text, true)
 
 	byteData, err := json.Marshal(data)
@@ -79,42 +75,6 @@ func WaitSparkaiOutput(conn *websocket.Conn) {
 	fmt.Println(answer)
 }
 
-func ReadFunctionsConfig(resources *embed.FS) (configMsg map[string]interface{}, err error) {
-	path := "function"
-	dir, err := resources.ReadDir(path)
-	if err != nil {
-		fmt.Println("Error reading config file:", err)
-		return
-	}
-
-	var regfuncs []map[string]interface{}
-
-	for _, v := range dir {
-		vPath := path + "/" + v.Name()
-		data, err := resources.ReadFile(vPath)
-		if err != nil {
-			fmt.Println("Error reading config file:", err)
-			break
-		}
-		var funcMsg map[string]interface{}
-
-		err = json.Unmarshal(data, &funcMsg)
-		if err != nil {
-			fmt.Println("Error parsing config file:", err)
-			break
-		}
-		regfuncs = append(regfuncs, funcMsg)
-	}
-
-	if err == nil {
-		configMsg = map[string]interface{}{
-			"text": regfuncs,
-		}
-	}
-
-	return
-}
-
 // 生成参数
 func GenParams1(appid, question string, first bool) map[string]interface{} {
 
@@ -142,11 +102,9 @@ func GenParams1(appid, question string, first bool) map[string]interface{} {
 		},
 	}
 
-	functions, err := ReadFunctionsConfig(&resources.FunctionsConfig)
-
-	if first && err == nil {
+	if len(constant.FunctionsConfig) != 0 {
 		payload := data["payload"].(map[string]interface{})
-		payload["functions"] = functions
+		payload["functions"] = constant.FunctionsConfig
 		fmt.Println("Register function call!")
 	}
 	return data
