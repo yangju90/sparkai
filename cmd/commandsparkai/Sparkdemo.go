@@ -38,7 +38,7 @@ func main() {
 				log.Println("param exit!")
 				return
 			default:
-				sparkaiservice.Wsservice(&wssConfig, sessionId, text)
+				sparkaiservice.Wsservice(sessionId, text)
 			}
 
 		}

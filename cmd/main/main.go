@@ -21,6 +21,6 @@ func main() {
 		errChan <- err
 	}()
 
-	gsd.GracefulShutdown("sparkai", errChan, &server)
+	gsd.HttpGracefulShutdown("sparkai", errChan, &server)
 
 }
