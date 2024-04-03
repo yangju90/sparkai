@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"sparkai/common/gsd"
 	"sparkai/internal/handler"
@@ -14,7 +13,14 @@ func main() {
 	router.HandleFunc("/user/question", handler.HandleHttpRequest).Methods("POST")
 	router.HandleFunc("/ws/answer", handler.HandleWebSocketConnection)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	var errChan chan (error)
+	var server http.Server
+	go func() {
+		server := http.Server{Addr: ":8080", Handler: router}
+		err := server.ListenAndServe()
+		errChan <- err
+	}()
 
-	gsd.GracefulShutdown("sparkai")
+	gsd.GracefulShutdown("sparkai", errChan, &server)
+
 }
