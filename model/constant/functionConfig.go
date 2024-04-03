@@ -14,7 +14,7 @@ func init() {
 	log.Println("init FunctionsConfig ......")
 
 	var err error
-	FunctionsConfig, err = ReadFunctionsConfig(&resources.FunctionsConfig)
+	FunctionsConfig, err = ReadFunctionsConfig(&resources.FunctionsResource)
 
 	if err != nil {
 		log.Println("init FunctionsConfig error!")

@@ -13,19 +13,19 @@ import (
 	"time"
 
 	"sparkai/internal/io"
-	"sparkai/model/wssconfig"
+	"sparkai/model/constant"
 
 	"github.com/gorilla/websocket"
 )
 
-func Wsservice(wssConfig *wssconfig.WssConfig, sessionId string, text string) {
+func Wsservice(sessionId string, text string) {
 	// sessionId 处理历史数据
 
 	d := websocket.Dialer{
 		HandshakeTimeout: 5 * time.Second,
 	}
 	//握手并建立websocket 连接
-	conn, resp, err := d.Dial(assembleAuthUrl1(wssConfig.HostUrl, wssConfig.ApiKey, wssConfig.ApiSecret), nil)
+	conn, resp, err := d.Dial(assembleAuthUrl1(constant.WssConfig.HostUrl, constant.WssConfig.ApiKey, constant.WssConfig.ApiSecret), nil)
 	if err != nil {
 		panic(readResp(resp) + err.Error())
 		return
@@ -43,7 +43,7 @@ func Wsservice(wssConfig *wssconfig.WssConfig, sessionId string, text string) {
 
 	// go heartbeat(c, conn)
 
-	go io.WaitUserInput(conn, wssConfig.Appid, text)
+	go io.WaitUserInput(conn, constant.WssConfig.Appid, text)
 
 	io.WaitSparkaiOutput(conn)
 }
