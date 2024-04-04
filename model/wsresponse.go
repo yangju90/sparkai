@@ -33,6 +33,27 @@ type HttpBodyRequest struct {
 	ImageData string `json:"imageData"`
 }
 
+type HttpBodyResponse struct {
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
+}
+
+func Success() *HttpBodyResponse {
+	res := HttpBodyResponse{
+		Code: 200,
+		Msg:  "成功",
+	}
+	return &res
+}
+
+func UserIdNotOnline(userId string) *HttpBodyResponse {
+	res := HttpBodyResponse{
+		Code: 400,
+		Msg:  "Id为" + userId + "的用户不在线",
+	}
+	return &res
+}
+
 type WSBodyRequest struct {
 	Topic     string      `json:"topic"`
 	Device    string      `json:"device"`
