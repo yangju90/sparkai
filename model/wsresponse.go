@@ -28,6 +28,11 @@ func (container *WSConnContainer) Close() error {
 	return err
 }
 
+type HttpBodyRequest struct {
+	Text      string `json:"text"`
+	ImageData string `json:"imageData"`
+}
+
 type WSBodyRequest struct {
 	Topic     string      `json:"topic"`
 	Device    string      `json:"device"`

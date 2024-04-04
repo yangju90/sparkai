@@ -47,7 +47,7 @@ func main() {
 	s := &model.WSBodyRequest{
 		Topic: "login",
 		ImMessage: model.MessageBody{
-			FromId: "user 1",
+			FromId: "1",
 		},
 	}
 
