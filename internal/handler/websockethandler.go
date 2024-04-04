@@ -1,9 +1,13 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"sparkai/model"
+	"sparkai/model/mem"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
@@ -30,34 +34,64 @@ func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 	})
 
 	go func() {
-		for {
-			// 读取消息
+		var requestbody model.WSBodyRequest
+		var sessionId string
 
-			mt, msg, err := conn.ReadMessage()
+		for {
+			_, msg, err := conn.ReadMessage()
+
 			if err != nil {
 				log.Println("ReadMessage error:", err)
+				if v, ok := mem.WSConnContainers[sessionId]; ok {
+					v.Close()
+				} else {
+					conn.Close()
+				}
+				delete(mem.WSConnContainers, sessionId)
 				break
 			}
 
-			fmt.Printf("收到消息：%s\n", string(msg))
+			err = json.Unmarshal(msg, &requestbody)
+			var mu sync.Mutex
 
-			fmt.Println(mt)
+			if err == nil {
+				switch requestbody.Topic {
+				case "login":
+					mem.WSConnContainers[requestbody.ImMessage.FromId] = &model.WSConnContainer{
+						WSConn: conn,
+						MU:     &mu,
+						Status: "UP",
+					}
+					sessionId = requestbody.ImMessage.FromId
+					if len(sessionId) == 0 {
+						conn.Close()
+						// break
+					} else {
+						if v, ok := mem.WSConnContainers[requestbody.ImMessage.FromId]; ok {
+							requestbody.ImMessage.Content = "登录成功!"
+							responseByte, _ := json.Marshal(requestbody)
+							v.Send(responseByte)
+						}
+					}
+				case "logout":
+					if v, ok := mem.WSConnContainers[requestbody.ImMessage.FromId]; ok {
+						requestbody.ImMessage.Content = "登出成功!"
+						responseByte, _ := json.Marshal(requestbody)
+						v.Send(responseByte)
+						v.Close()
+					}
+					delete(mem.WSConnContainers, requestbody.ImMessage.FromId)
+				case "heart_beat":
+					log.Println(sessionId + "   " + string(msg))
 
-			// 检查消息类型
-			// switch msg := msg.(type) {
-			// case *websocket.PingMessage:
-			// 	// 发送 PongMessage 作为响应
-			// 	err := conn.WriteMessage(websocket.PongMessage, msg.Data)
-			// 	if err != nil {
-			// 		log.Println("WriteMessage error:", err)
-			// 		break
-			// 	}
-			// }
-
-			err = conn.WriteMessage(websocket.TextMessage, []byte(msg))
-			if err != nil {
-				log.Println("WriteMessage:", err)
-				break
+				default:
+					mu.Lock()
+					err = conn.WriteMessage(websocket.TextMessage, []byte(""))
+					mu.Unlock()
+					if err != nil {
+						log.Println("WriteMessage:", err)
+					}
+				}
 			}
 		}
 	}()

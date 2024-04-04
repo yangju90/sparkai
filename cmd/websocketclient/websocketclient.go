@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/url"
 	"os"
 	"os/signal"
+	"sparkai/model"
 	"sync"
 	"time"
 
@@ -41,7 +43,17 @@ func main() {
 
 	// 向服务器发送消息
 	mu.Lock()
-	err = c.WriteMessage(websocket.TextMessage, []byte("你好，我是客户端"))
+
+	s := &model.WSBodyRequest{
+		Topic: "login",
+		ImMessage: model.MessageBody{
+			FromId: "user 1",
+		},
+	}
+
+	resp, _ := json.Marshal(s)
+
+	err = c.WriteMessage(websocket.TextMessage, resp)
 	if err != nil {
 		log.Println("write:", err)
 		return
@@ -68,12 +80,21 @@ func receiveMessages(c *websocket.Conn) {
 }
 
 func sendHeartbeat(c *websocket.Conn) {
-	heartbeatInterval := time.Second * 10 // 设置心跳间隔为30秒
-	pingMsg := []byte("ping")             // 心跳消息内容
+	heartbeatInterval := time.Second * 3 // 设置心跳间隔为30秒
+	// pingMsg := []byte("ping")            // 心跳消息内容
+
+	s := &model.WSBodyRequest{
+		Topic: "heart_beat",
+		ImMessage: model.MessageBody{
+			Content: "ping",
+		},
+	}
+
+	resp, _ := json.Marshal(s)
 
 	for {
 		mu.Lock()
-		err := c.WriteMessage(websocket.PingMessage, pingMsg)
+		err := c.WriteMessage(websocket.TextMessage, resp)
 		mu.Unlock()
 		if err != nil {
 			log.Println("write:", err)
