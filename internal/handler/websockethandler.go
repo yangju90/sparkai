@@ -9,6 +9,7 @@ import (
 	"sparkai/model/mem"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -58,9 +59,11 @@ func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 				switch requestbody.Topic {
 				case "login":
 					mem.WSConnContainers[requestbody.ImMessage.FromId] = &model.WSConnContainer{
-						WSConn: conn,
-						MU:     &mu,
-						Status: "UP",
+						WSConn:     conn,
+						MU:         &mu,
+						Status:     "UP",
+						ChatId:     uuid.New().String(),
+						IsRegistry: false,
 					}
 					sessionId = requestbody.ImMessage.FromId
 					if len(sessionId) == 0 {

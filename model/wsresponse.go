@@ -7,10 +7,12 @@ import (
 )
 
 type WSConnContainer struct {
-	WSConn   *websocket.Conn
-	MU       *sync.Mutex
-	Status   string
-	Messages []Message
+	WSConn     *websocket.Conn
+	MU         *sync.Mutex
+	Status     string
+	Messages   []Message
+	ChatId     string
+	IsRegistry bool
 }
 
 func (container *WSConnContainer) Send(data []byte) error {
@@ -95,4 +97,11 @@ type MessageBody struct {
 type Message struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
+}
+
+type WSBodyResponse struct {
+	Code        int    `json:"code"`
+	Status      int    `json:"status"`
+	Content     string `json:"content"`
+	ContentType string `json:"contentType"`
 }
