@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sparkai/internal/sparkaiservice"
 	"sparkai/model"
+	"sparkai/model/constant"
 	"sparkai/model/mem"
 	"strings"
 )
@@ -24,10 +26,18 @@ func HandleHttpRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if strings.Contains(r.Header.Get("Content-Type"), "application/json") {
-		str, _ := json.Marshal(body)
 		if v, ok := mem.WSConnContainers[userId]; ok {
-			v.Send(str)
-			resp = model.Success()
+			if len(body.Text) != 0 {
+				// 1. 添加用户提问
+				// v.AppendMessage(body.Text, constant.USER)
+				v.NewMessages(body.Text, constant.USER)
+				// 1.调用sparkai
+				if e := sparkaiservice.Wsservice(userId); e != nil {
+					resp = model.Faild(e)
+				} else {
+					resp = model.Success()
+				}
+			}
 		} else {
 			resp = model.UserIdNotOnline(userId)
 		}

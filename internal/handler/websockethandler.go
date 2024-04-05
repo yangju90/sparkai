@@ -82,7 +82,7 @@ func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 					}
 					delete(mem.WSConnContainers, requestbody.ImMessage.FromId)
 				case "heart_beat":
-					log.Println(sessionId + "   " + string(msg))
+					// log.Println(sessionId + "   " + string(msg))
 
 				default:
 					mu.Lock()

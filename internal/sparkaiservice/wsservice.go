@@ -18,7 +18,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func Wsservice(sessionId string, text string) {
+func Wsservice(userId string) error {
 	// sessionId 处理历史数据
 
 	d := websocket.Dialer{
@@ -28,7 +28,6 @@ func Wsservice(sessionId string, text string) {
 	conn, resp, err := d.Dial(assembleAuthUrl1(constant.WssConfig.HostUrl, constant.WssConfig.ApiKey, constant.WssConfig.ApiSecret), nil)
 	if err != nil {
 		panic(readResp(resp) + err.Error())
-		return
 	} else if resp.StatusCode != 101 {
 		panic(readResp(resp) + err.Error())
 	}
@@ -43,9 +42,9 @@ func Wsservice(sessionId string, text string) {
 
 	// go heartbeat(c, conn)
 
-	go io.WaitUserInput(conn, constant.WssConfig.Appid, text)
+	go io.WaitUserInput(conn, constant.WssConfig.Appid, userId)
 
-	io.WaitSparkaiOutput(conn)
+	return io.WaitSparkaiOutput(conn, userId)
 }
 
 func heartbeat(c chan int, conn *websocket.Conn) {

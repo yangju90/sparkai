@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/url"
 	"os"
@@ -75,7 +74,7 @@ func receiveMessages(c *websocket.Conn) {
 			log.Println("read:", err)
 			return
 		}
-		fmt.Printf("收到来自服务器的消息： %s", message)
+		log.Printf("收到来自服务器的消息： %s \n", message)
 	}
 }
 

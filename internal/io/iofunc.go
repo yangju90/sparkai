@@ -2,19 +2,26 @@ package io
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
+	"sparkai/model"
 	"sparkai/model/constant"
+	"sparkai/model/mem"
 
 	"github.com/gorilla/websocket"
 )
 
-func WaitUserInput(conn *websocket.Conn, appid string, text string) {
+func WaitUserInput(conn *websocket.Conn, appid string, userId string) {
+	var messages []model.Message
 
-	if len(text) == 0 {
-		text = "你是谁，可以干什么？"
+	if v, ok := mem.WSConnContainers[userId]; ok {
+		messages = v.Messages
+	} else {
+		panic("Id为" + userId + "的用户不在线")
 	}
 
-	data := GenParams1(appid, text, true)
+	data := GenParams1(appid, messages, true)
 
 	byteData, err := json.Marshal(data)
 	if err != nil {
@@ -22,25 +29,27 @@ func WaitUserInput(conn *websocket.Conn, appid string, text string) {
 		return
 	}
 
-	conn.WriteMessage(1, byteData)
+	log.Println("发送数据：" + string(byteData))
+
+	conn.WriteMessage(websocket.TextMessage, byteData)
 	// conn.WriteJSON(data)
 }
 
-func WaitSparkaiOutput(conn *websocket.Conn) {
+func WaitSparkaiOutput(conn *websocket.Conn, userId string) error {
 	var answer = ""
 	//获取返回的数据
 	for {
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
 			fmt.Println("read message error:", err)
-			break
+			return err
 		}
 
 		var data map[string]interface{}
 		err1 := json.Unmarshal(msg, &data)
 		if err1 != nil {
 			fmt.Println("Error parsing JSON:", err)
-			return
+			return err1
 		}
 		fmt.Println(string(msg))
 		//解析数据
@@ -51,12 +60,25 @@ func WaitSparkaiOutput(conn *websocket.Conn) {
 
 		if code != 0 {
 			fmt.Println(data["payload"])
-			return
+			return errors.New("sparkai response err")
 		}
 		status := choices["status"].(float64)
-		fmt.Println(status)
 		text := choices["text"].([]interface{})
 		content := text[0].(map[string]interface{})["content"].(string)
+
+		if v, ok := mem.WSConnContainers[userId]; ok {
+			textByteData, err := json.Marshal(text)
+			if err == nil {
+				if e := v.Send(textByteData); e != nil {
+					return e
+				}
+			} else {
+				return err
+			}
+		} else {
+			panic("Id为" + userId + "的用户不在线")
+		}
+
 		if status != 2 {
 			answer += content
 		} else {
@@ -73,15 +95,12 @@ func WaitSparkaiOutput(conn *websocket.Conn) {
 	}
 	//输出返回结果
 	fmt.Println(answer)
+
+	return nil
 }
 
 // 生成参数
-func GenParams1(appid, question string, first bool) map[string]interface{} {
-
-	messages := []Message{
-		{Role: "user", Content: question},
-	}
-
+func GenParams1(appid string, messages []model.Message, funcCall bool) map[string]interface{} {
 	data := map[string]interface{}{
 		"header": map[string]interface{}{
 			"app_id": appid,
@@ -102,15 +121,10 @@ func GenParams1(appid, question string, first bool) map[string]interface{} {
 		},
 	}
 
-	if len(constant.FunctionsConfig) != 0 {
+	if len(constant.FunctionsConfig) != 0 && funcCall {
 		payload := data["payload"].(map[string]interface{})
 		payload["functions"] = constant.FunctionsConfig
 		fmt.Println("Register function call!")
 	}
 	return data
-}
-
-type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
 }

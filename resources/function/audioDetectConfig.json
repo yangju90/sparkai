@@ -1,0 +1,16 @@
+{
+    "name": "视频检测",
+    "description": "视频流检测可以检测视频流中内容。你可以问无人机视频流检测、摄像头视频流检测，雷视一体机视频流检测。",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "text": {
+                "type": "string",
+                "description": "检测的目标视频流，如无人机、摄像头、雷视一体机"
+            }
+        },
+        "required": [
+            "text"
+        ]
+    }
+}
