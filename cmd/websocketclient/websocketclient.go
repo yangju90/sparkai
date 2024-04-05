@@ -24,7 +24,7 @@ func main() {
 	signal.Notify(interrupt, os.Interrupt)
 
 	// WebSocket服务器地址
-	u := url.URL{Scheme: "ws", Host: "127.0.0.1:8080", Path: "/ws/answer"}
+	u := url.URL{Scheme: "ws", Host: "127.0.0.1:8090", Path: "/ws/answer"}
 	log.Printf("connecting to %s", u.String())
 
 	// 创建WebSocket客户端连接
