@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"sparkai/model"
+	"sparkai/model/constant"
 	"sparkai/model/mem"
 	"strings"
 	"sync"
@@ -59,9 +60,18 @@ func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 			if err == nil {
 				switch requestbody.Topic {
 				case "login":
+
+					messages := []model.Message{
+						{
+							Role:    constant.SYSTEM,
+							Content: constant.SystemPromptConfig,
+						},
+					}
+
 					mem.WSConnContainers[requestbody.ImMessage.FromId] = &model.WSConnContainer{
 						WSConn:     conn,
 						MU:         &mu,
+						Messages:   messages,
 						Status:     "UP",
 						ChatId:     strings.ReplaceAll(uuid.New().String(), "-", ""),
 						IsRegistry: false,

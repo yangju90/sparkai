@@ -1,6 +1,7 @@
 package model
 
 import (
+	"sparkai/model/constant"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -42,10 +43,15 @@ func (container *WSConnContainer) AppendMessage(text string, messageType string)
 }
 
 func (container *WSConnContainer) NewMessages(text string, messageType string) {
-	current := []Message{{
-		Role:    messageType,
-		Content: text,
-	},
+	current := []Message{
+		{
+			Role:    constant.SYSTEM,
+			Content: constant.SystemPromptConfig,
+		},
+		{
+			Role:    messageType,
+			Content: text,
+		},
 	}
 	container.Messages = current
 }
