@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sparkai/internal/functionsProcess"
 	"sparkai/model"
 	"sparkai/model/constant"
 	"sparkai/model/mem"
@@ -37,6 +38,12 @@ func WaitUserInput(conn *websocket.Conn, appid string, userId string) {
 
 func WaitSparkaiOutput(conn *websocket.Conn, userId string) error {
 	var answer = ""
+
+	v, ok := mem.WSConnContainers[userId]
+	if !ok {
+		panic("Id为" + userId + "的用户不在线")
+	}
+
 	//获取返回的数据
 	for {
 		_, msg, err := conn.ReadMessage()
@@ -72,62 +79,62 @@ func WaitSparkaiOutput(conn *websocket.Conn, userId string) error {
 
 		if functionCall == nil {
 			wsResponse.ContentType = "text"
-			wsResponse.Status = responseConvert("text", int(status))
+			wsResponse.Status = ResponseConvert("text", int(status))
 			wsResponse.Content = content
 		} else {
 			functionCallMap := functionCall.(map[string]interface{})
-			wsResponse.Status = responseConvert("function", int(status))
+			wsResponse.Status = ResponseConvert("function", int(status))
 			wsResponse.ContentType = "function"
 			wsResponse.Content = functionCallMap["name"].(string)
-			// Todo function 后续调用
 		}
 
-		if v, ok := mem.WSConnContainers[userId]; ok {
-			textByteData, err := json.Marshal(wsResponse)
-			if err == nil {
-				if e := v.Send(textByteData); e != nil {
-					return e
-				}
-
-				// undo 临时测试
-				if wsResponse.Status == 2 {
-					wsResponse.Status = 9
-					wsResponse.Content += "，调用完成！"
-					ccc, _ := json.Marshal(wsResponse)
-					if e := v.Send(ccc); e != nil {
-						return e
-					}
-				}
-
-				// undo
-			} else {
-				return err
-			}
-		} else {
-			panic("Id为" + userId + "的用户不在线")
-		}
-
-		if status != 2 {
+		if wsResponse.Status != 9 {
 			answer += content
 		} else {
-			log.Println("收到最终结果")
 			answer += content
 			usage := payload["usage"].(map[string]interface{})
 			temp := usage["text"].(map[string]interface{})
 			totalTokens := temp["total_tokens"].(float64)
 			fmt.Println("total_tokens:", totalTokens)
 			conn.Close()
-			break
 		}
 
+		textByteData, err := json.Marshal(wsResponse)
+		if err == nil {
+			if e := v.Send(textByteData); e != nil {
+				return e
+			}
+
+			if wsResponse.Status == 2 {
+				wsResponse.Status = 9
+				funcRes, funcNext, funcerr := functionsProcess.ChoiceFuntionCall(wsResponse.Content, userId)
+				if funcerr != nil {
+					wsResponse.Content += "功能调用失败！"
+				} else {
+					wsResponse.Content = funcRes
+				}
+				answer += wsResponse.Content
+				if funcNext {
+					ccc, _ := json.Marshal(wsResponse)
+					if e := v.Send(ccc); e != nil {
+						return e
+					}
+				}
+			}
+		} else {
+			return err
+		}
+
+		if wsResponse.Status == 9 {
+			break
+		}
 	}
-	//输出返回结果
-	fmt.Println(answer)
+	v.AppendMessage(answer, constant.ASSISTANT)
 
 	return nil
 }
 
-func responseConvert(contentType string, code int) int {
+func ResponseConvert(contentType string, code int) int {
 	var res int = 9
 	if contentType == "text" {
 		switch code {
@@ -156,7 +163,7 @@ func GenParams1(appid string, uid string, chat_id string, messages []model.Messa
 				"domain":      "generalv3.5",
 				"temperature": float64(0.5),
 				"top_k":       int64(4),
-				"max_tokens":  int64(2048),
+				"max_tokens":  int64(8192),
 				"chat_id":     chat_id,
 			},
 		},

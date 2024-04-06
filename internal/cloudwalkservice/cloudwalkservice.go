@@ -11,11 +11,15 @@ import (
 )
 
 func Service(userId string) (string, error) {
+
 	// 准备请求体数据
 	var data map[string]interface{}
 
 	if v, ok := mem.WSConnContainers[userId]; ok {
 		message := v.Messages[len(v.Messages)-1]
+		if len(v.ImageData) == 0 {
+			return "", errors.New("调用图片问答失败, 没有图片信息")
+		}
 		data = CreateRequestBody(message.Content, v.ImageData)
 	} else {
 		return "", errors.New("Id为" + userId + "的用户不在线")

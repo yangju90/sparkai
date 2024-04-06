@@ -29,8 +29,9 @@ func HandleHttpRequest(w http.ResponseWriter, r *http.Request) {
 		if v, ok := mem.WSConnContainers[userId]; ok {
 			if len(body.Text) != 0 {
 				// 1. 添加用户提问
-				// v.AppendMessage(body.Text, constant.USER)
-				v.NewMessages(body.Text, constant.USER)
+				v.AppendMessage(body.Text, constant.USER)
+				v.ImageData = body.ImageData
+				// v.NewMessages(body.Text, constant.USER)
 				// 1.调用sparkai
 				if e := sparkaiservice.Wsservice(userId); e != nil {
 					resp = model.Faild(e)

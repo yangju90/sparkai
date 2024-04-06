@@ -10,12 +10,12 @@ var SystemPromptConfig string
 
 func init() {
 
-	path := "E:/goconfig/system/systemPromptConfig.json"
+	path := "E:/goconfig/system/systemPromptConfig.prompt"
 
 	_, err := os.Stat(path)
 	if err != nil {
 		log.Println("local system prompt not exists: " + path)
-		data, err := resources.SystemConfig.ReadFile("system/systemPromptConfig.json")
+		data, err := resources.SystemConfig.ReadFile("system/systemPromptConfig.prompt")
 		if err != nil {
 			log.Println("read system prompt info error:", err)
 			return
@@ -29,4 +29,6 @@ func init() {
 		}
 		SystemPromptConfig = string(data)
 	}
+
+	log.Println(SystemPromptConfig)
 }

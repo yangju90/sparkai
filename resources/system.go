@@ -2,5 +2,5 @@ package resouces
 
 import "embed"
 
-//go:embed static
+//go:embed system
 var SystemConfig embed.FS

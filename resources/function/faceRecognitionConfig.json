@@ -1,0 +1,16 @@
+{
+    "name": "目标识别",
+    "description": "目标识别可以识别信息库中存储的人员、武器装备信息。你可以进行人脸识别、武器型号识别、装备信息识别并输出识别到的信息。",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "text": {
+                "type": "string",
+                "description": "识别对应的目标，如人脸、人员、装备、武器"
+            }
+        },
+        "required": [
+            "text"
+        ]
+    }
+}
