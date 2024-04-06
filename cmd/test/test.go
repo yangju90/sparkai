@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"sync"
+
+	"sparkai/internal/cloudwalkservice"
 )
 
 func producer(ch chan<- int, wg *sync.WaitGroup) {
@@ -21,18 +24,26 @@ func consumer(id int, ch <-chan int, wg *sync.WaitGroup) {
 }
 
 func main() {
-	ch := make(chan int) // 创建一个整数类型的通道
-	var wg sync.WaitGroup
 
-	// 启动生产者
-	wg.Add(1)
-	go producer(ch, &wg)
-
-	// 启动两个消费者，它们共享同一个通道
-	for i := 0; i < 2; i++ {
-		wg.Add(1)
-		go consumer(i, ch, &wg)
+	res, err := cloudwalkservice.Service("1")
+	if err != nil {
+		log.Println(err)
 	}
 
-	wg.Wait() // 等待所有 goroutine 执行完成
+	log.Println(res)
+
+	// ch := make(chan int) // 创建一个整数类型的通道
+	// var wg sync.WaitGroup
+
+	// // 启动生产者
+	// wg.Add(1)
+	// go producer(ch, &wg)
+
+	// // 启动两个消费者，它们共享同一个通道
+	// for i := 0; i < 2; i++ {
+	// 	wg.Add(1)
+	// 	go consumer(i, ch, &wg)
+	// }
+
+	// wg.Wait() // 等待所有 goroutine 执行完成
 }

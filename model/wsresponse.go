@@ -11,6 +11,7 @@ type WSConnContainer struct {
 	MU         *sync.Mutex
 	Status     string
 	Messages   []Message
+	ImageData  string
 	ChatId     string
 	IsRegistry bool
 }

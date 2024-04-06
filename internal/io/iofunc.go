@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// 0 开始  1 继续文字  2 调用function  3 结束
+// 0 开始  1 继续文字  2 调用function  9 结束
 
 func WaitUserInput(conn *websocket.Conn, appid string, userId string) {
 	if v, ok := mem.WSConnContainers[userId]; ok {
@@ -91,7 +91,7 @@ func WaitSparkaiOutput(conn *websocket.Conn, userId string) error {
 
 				// undo 临时测试
 				if wsResponse.Status == 2 {
-					wsResponse.Status = 3
+					wsResponse.Status = 9
 					wsResponse.Content += "，调用完成！"
 					ccc, _ := json.Marshal(wsResponse)
 					if e := v.Send(ccc); e != nil {
@@ -128,7 +128,7 @@ func WaitSparkaiOutput(conn *websocket.Conn, userId string) error {
 }
 
 func responseConvert(contentType string, code int) int {
-	var res int = 3
+	var res int = 9
 	if contentType == "text" {
 		switch code {
 		case 0:
@@ -136,7 +136,7 @@ func responseConvert(contentType string, code int) int {
 		case 1:
 			res = 1
 		case 2:
-			res = 3
+			res = 9
 		}
 	} else if contentType == "function" {
 		return code

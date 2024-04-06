@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -26,10 +27,12 @@ func Wsservice(userId string) error {
 	}
 	//握手并建立websocket 连接
 	conn, resp, err := d.Dial(assembleAuthUrl1(constant.WssConfig.HostUrl, constant.WssConfig.ApiKey, constant.WssConfig.ApiSecret), nil)
+
 	if err != nil {
-		panic(readResp(resp) + err.Error())
+		return err
 	} else if resp.StatusCode != 101 {
-		panic(readResp(resp) + err.Error())
+		log.Println(resp)
+		return errors.New("AI错误的状态码")
 	}
 
 	defer conn.Close()

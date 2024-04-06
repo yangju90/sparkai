@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"sparkai/model"
 	"sparkai/model/mem"
+	"strings"
 	"sync"
 
 	"github.com/google/uuid"
@@ -62,7 +63,7 @@ func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 						WSConn:     conn,
 						MU:         &mu,
 						Status:     "UP",
-						ChatId:     uuid.New().String(),
+						ChatId:     strings.ReplaceAll(uuid.New().String(), "-", ""),
 						IsRegistry: false,
 					}
 					sessionId = requestbody.ImMessage.FromId
