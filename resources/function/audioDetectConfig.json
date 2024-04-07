@@ -1,12 +1,12 @@
 {
     "name": "视频检测",
-    "description": "视频流检测可以检测视频流中内容。你可以问无人机视频流检测、摄像头视频流检测，雷视一体机视频流检测。",
+    "description": "最新对话必须包含“视频流”三个字。",
     "parameters": {
         "type": "object",
         "properties": {
             "text": {
                 "type": "string",
-                "description": "检测的目标视频流，如无人机、摄像头、雷视一体机"
+                "description": "参数必须是无人机、摄像头、雷视一体机三种类型的一种"
             }
         },
         "required": [

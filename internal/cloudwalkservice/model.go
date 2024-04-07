@@ -1,8 +1,14 @@
 package cloudwalkservice
 
+import (
+	"strings"
+
+	"github.com/google/uuid"
+)
+
 func CreateRequestBody(question string, imageData string) map[string]interface{} {
 	data := map[string]interface{}{
-		"id":          "b31c92228a264137-90bb01a8a0e217a7",
+		"id":          strings.ReplaceAll(uuid.New().String(), "-", ""),
 		"command":     "lmm",
 		"model":       "",
 		"max_tokens":  1024,

@@ -64,7 +64,7 @@ func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 					messages := []model.Message{
 						{
 							Role:    constant.SYSTEM,
-							Content: constant.SystemPromptConfig,
+							Content: constant.FuncPromptConfig,
 						},
 					}
 
@@ -74,7 +74,7 @@ func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 						Messages:   messages,
 						Status:     "UP",
 						ChatId:     strings.ReplaceAll(uuid.New().String(), "-", ""),
-						IsRegistry: false,
+						IsRegistry: true,
 					}
 					sessionId = requestbody.ImMessage.FromId
 					if len(sessionId) == 0 {

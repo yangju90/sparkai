@@ -2,10 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"sync"
-
-	"sparkai/internal/cloudwalkservice"
 )
 
 func producer(ch chan<- int, wg *sync.WaitGroup) {
@@ -24,14 +21,6 @@ func consumer(id int, ch <-chan int, wg *sync.WaitGroup) {
 }
 
 func main() {
-
-	res, err := cloudwalkservice.Service("1")
-	if err != nil {
-		log.Println(err)
-	}
-
-	log.Println(res)
-
 	// ch := make(chan int) // 创建一个整数类型的通道
 	// var wg sync.WaitGroup
 

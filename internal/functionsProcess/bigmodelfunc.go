@@ -125,7 +125,8 @@ func WaitSparkaiOutput(conn *websocket.Conn, userId string) (string, error) {
 
 func waitUserInput(conn *websocket.Conn, appid string, userId string) {
 	if v, ok := mem.WSConnContainers[userId]; ok {
-		data := GenParams(appid, userId, v.ChatId, v.Messages, true)
+		message := v.Messages[len(v.Messages)-1]
+		data := genParams(appid, userId, v.ChatId, message.Content)
 
 		byteData, err := json.Marshal(data)
 		if err != nil {
@@ -135,8 +136,6 @@ func waitUserInput(conn *websocket.Conn, appid string, userId string) {
 
 		log.Println("BigModel发送数据：" + string(byteData))
 		conn.WriteMessage(websocket.TextMessage, byteData)
-
-		// v.IsRegistry = true
 	} else {
 		panic("Id为" + userId + "的用户不在线")
 	}
@@ -225,7 +224,18 @@ func responseConvert(contentType string, code int) int {
 }
 
 // 生成参数
-func GenParams(appid string, uid string, chat_id string, messages []model.Message, isRegistry bool) map[string]interface{} {
+func genParams(appid string, uid string, chat_id string, text string) map[string]interface{} {
+	messages := []model.Message{
+		{
+			Role:    constant.SYSTEM,
+			Content: constant.GeneralPromptConfig,
+		},
+		{
+			Role:    constant.USER,
+			Content: text,
+		},
+	}
+
 	data := map[string]interface{}{
 		"header": map[string]interface{}{
 			"app_id": appid,
@@ -247,10 +257,5 @@ func GenParams(appid string, uid string, chat_id string, messages []model.Messag
 		},
 	}
 
-	if len(constant.FunctionsConfig) != 0 && !isRegistry {
-		payload := data["payload"].(map[string]interface{})
-		payload["functions"] = constant.FunctionsConfig
-		fmt.Println("Register function call!")
-	}
 	return data
 }

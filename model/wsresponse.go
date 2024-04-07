@@ -46,7 +46,7 @@ func (container *WSConnContainer) NewMessages(text string, messageType string) {
 	current := []Message{
 		{
 			Role:    constant.SYSTEM,
-			Content: constant.SystemPromptConfig,
+			Content: constant.FuncPromptConfig,
 		},
 		{
 			Role:    messageType,
@@ -111,4 +111,5 @@ type WSBodyResponse struct {
 	Status      int    `json:"status"`
 	Content     string `json:"content"`
 	ContentType string `json:"contentType"`
+	RTSPUrl     string `json:"respUrl"`
 }

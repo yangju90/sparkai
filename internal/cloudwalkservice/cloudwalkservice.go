@@ -10,8 +10,13 @@ import (
 	"sparkai/model/mem"
 )
 
-func Service(userId string) (string, error) {
-
+func Service(userId string) (res string, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			res = ""
+			err = errors.New(fmt.Sprint(r))
+		}
+	}()
 	// 准备请求体数据
 	var data map[string]interface{}
 
