@@ -75,6 +75,8 @@ func WaitSparkaiOutput(conn *websocket.Conn, userId string) error {
 		text := choices["text"].([]interface{})
 		content := text[0].(map[string]interface{})["content"].(string)
 
+		tmp := ""
+
 		var wsResponse model.WSBodyResponse
 		wsResponse.Code = int(code)
 		wsResponse.ContentType = "text"
@@ -92,34 +94,50 @@ func WaitSparkaiOutput(conn *websocket.Conn, userId string) error {
 			conn.Close()
 		}
 
-		textByteData, err := json.Marshal(wsResponse)
-		if err == nil {
-			if e := v.Send(textByteData); e != nil {
-				return e
-			}
-
-			wsResponse.Content = ""
-			if wsResponse.Status == 2 {
-				funcName, needCall := NeedCallFunc(answer)
-				if needCall {
-					if e := sendCallFunctionSignal(v); e != nil {
-						return e
-					}
-					funcerr := functionsProcess.ChoiceFuntionCall(funcName, userId)
-					if funcerr != nil {
-						wsResponse.Content = answer + ",功能调用失败！"
-					}
-					answer = ""
-				}
-
-				wsResponse.Status = 9
-				ccc, _ := json.Marshal(wsResponse)
-				if e := v.Send(ccc); e != nil {
-					return e
-				}
+		if wsResponse.Status == 0 {
+			if strings.HasPrefix(wsResponse.Content, "【") {
+				tmp += wsResponse.Content
 			}
 		} else {
-			return err
+			if len(tmp) != 0 {
+				tmp += wsResponse.Content
+			}
+		}
+
+		if wsResponse.Status == 2 || len(tmp) == 0 || len([]rune(tmp)) > 20 {
+			funcName := ""
+			needCall := false
+
+			if len(tmp) != 0 {
+				funcName, needCall = NeedCallFunc(answer)
+				wsResponse.Content = tmp
+				tmp = ""
+			}
+			textByteData, err := json.Marshal(wsResponse)
+			if err == nil {
+				if !needCall {
+					if e := v.Send(textByteData); e != nil {
+						return e
+					}
+				}
+				wsResponse.Content = ""
+				if wsResponse.Status == 2 {
+					if needCall {
+						funcerr := functionsProcess.ChoiceFuntionCall(funcName, userId)
+						if funcerr != nil {
+							wsResponse.Content = answer + ",功能调用失败！"
+						}
+						answer = ""
+					}
+					wsResponse.Status = 9
+					ccc, _ := json.Marshal(wsResponse)
+					if e := v.Send(ccc); e != nil {
+						return e
+					}
+				}
+			} else {
+				return err
+			}
 		}
 
 		if wsResponse.Status == 9 {
@@ -132,18 +150,6 @@ func WaitSparkaiOutput(conn *websocket.Conn, userId string) error {
 	}
 
 	return nil
-}
-
-func sendCallFunctionSignal(v *model.WSConnContainer) error {
-	wsResponse := model.WSBodyResponse{
-		Code:        int(0),
-		Status:      3,
-		Content:     "\n",
-		ContentType: "function",
-	}
-
-	ccc, _ := json.Marshal(wsResponse)
-	return v.Send(ccc)
 }
 
 func NeedCallFunc(str string) (string, bool) {

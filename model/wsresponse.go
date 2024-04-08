@@ -111,5 +111,5 @@ type WSBodyResponse struct {
 	Status      int    `json:"status"`
 	Content     string `json:"content"`
 	ContentType string `json:"contentType"`
-	RTSPUrl     string `json:"respUrl"`
+	Url         string `json:"url"`
 }

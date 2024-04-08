@@ -24,14 +24,13 @@ func HandleHttpRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
 	if strings.Contains(r.Header.Get("Content-Type"), "application/json") {
 		if v, ok := mem.WSConnContainers[userId]; ok {
 			if len(body.Text) != 0 {
 				// 1. 添加用户提问
 				v.AppendMessage(body.Text, constant.USER)
 				v.ImageData = body.ImageData
-				// v.NewMessages(body.Text, constant.USER)
+
 				// 1.调用sparkai
 				if e := sparkaiservice.Wsservice(userId); e != nil {
 					resp = model.Faild(e)

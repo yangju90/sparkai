@@ -6,10 +6,10 @@ import (
 	"github.com/google/uuid"
 )
 
-func CreateRequestBody(question string, imageData string) map[string]interface{} {
+func CreateRequestBody(question string, imageData string, modelType string) map[string]interface{} {
 	data := map[string]interface{}{
 		"id":          strings.ReplaceAll(uuid.New().String(), "-", ""),
-		"command":     "lmm",
+		"command":     modelType,
 		"model":       "",
 		"max_tokens":  1024,
 		"temperature": 1,
