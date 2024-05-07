@@ -1,38 +1,57 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"sync"
+	"io"
+	"log"
+	"net/http"
+	"sparkai/model/qwen"
 )
 
-func producer(ch chan<- int, wg *sync.WaitGroup) {
-	defer wg.Done()
-	for i := 0; i < 5; i++ {
-		ch <- i // 发送数据到通道
-	}
-	close(ch) // 关闭通道
-}
-
-func consumer(id int, ch <-chan int, wg *sync.WaitGroup) {
-	defer wg.Done()
-	for num := range ch { // 从通道接收数据
-		fmt.Printf("消费者 %d 接收到数据: %d\n", id, num)
-	}
-}
-
 func main() {
-	// ch := make(chan int) // 创建一个整数类型的通道
-	// var wg sync.WaitGroup
+	url := "http://192.168.8.232:11434/api/chat"
 
-	// // 启动生产者
-	// wg.Add(1)
-	// go producer(ch, &wg)
+	body := qwen.NewOllamaReqBody()
+	bytesBody, _ := json.Marshal(body)
 
-	// // 启动两个消费者，它们共享同一个通道
-	// for i := 0; i < 2; i++ {
-	// 	wg.Add(1)
-	// 	go consumer(i, ch, &wg)
-	// }
+	resp, err := http.Post(url, "application/json", bytes.NewReader(bytesBody))
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	defer resp.Body.Close()
 
-	// wg.Wait() // 等待所有 goroutine 执行完成
+	te := resp.TransferEncoding
+	if te != nil && "chunked" == te[0] {
+		fmt.Println("chunked!")
+		reader := bufio.NewReader(resp.Body)
+		for {
+			chunked, err := reader.ReadString('\n')
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				fmt.Println("Error:", err)
+				break
+			}
+
+			var respBody qwen.OllamaRespBody
+			err = json.Unmarshal([]byte(chunked), &respBody)
+			log.Println(chunked)
+		}
+	} else {
+		respContent, err := io.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+
+		var respBody qwen.OllamaRespBody
+		err = json.Unmarshal([]byte(respContent), &respBody)
+
+		log.Println(respContent)
+	}
+
 }

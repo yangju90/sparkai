@@ -1,15 +1,20 @@
 package io
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"regexp"
 	"sparkai/internal/functionsProcess"
 	"sparkai/model"
 	"sparkai/model/constant"
 	"sparkai/model/mem"
+	"sparkai/model/qwen"
 	"strings"
 
 	"github.com/gorilla/websocket"
@@ -17,36 +22,50 @@ import (
 
 // 0 开始  1 继续文字  2 调用function  9 结束
 
-func WaitUserInput(conn *websocket.Conn, appid string, userId string) {
+func Wsservice(userId string) error {
 	if v, ok := mem.WSConnContainers[userId]; ok {
-		data := GenParams1(appid, userId, v.ChatId, v.Messages, v.IsRegistry)
 
-		byteData, err := json.Marshal(data)
+		url := "http://192.168.8.232:11434/api/chat"
+
+		body := qwen.NewOllamaReqBody()
+		bytesBody, _ := json.Marshal(body)
+
+		resp, err := http.Post(url, "application/json", bytes.NewReader(bytesBody))
 		if err != nil {
-			log.Println("map cast byte error ", err)
-			return
+			fmt.Println("Error:", err)
+			return err
 		}
+		defer resp.Body.Close()
 
-		log.Println("发送数据：" + string(byteData))
-		conn.WriteMessage(websocket.TextMessage, byteData)
+		te := resp.TransferEncoding
+		if te != nil && "chunked" == te[0] {
+			fmt.Println("chunked!")
+			reader := bufio.NewReader(resp.Body)
+			for {
+				chunked, err := reader.ReadString('\n')
+				if err != nil {
+					if err == io.EOF {
+						break
+					}
+					fmt.Println("Error:", err)
+					break
+				}
 
-		// v.IsRegistry = true
+				var respBody qwen.OllamaRespBody
+				err = json.Unmarshal([]byte(chunked), &respBody)
+				log.Println(chunked)
+			}
+		} else {
+			return errors.New("错误的返回, Not Chunked response!")
+		}
 	} else {
-		panic("Id为" + userId + "的用户不在线")
+		return errors.New("Id为" + userId + "的用户不在线")
 	}
 
-	// conn.WriteJSON(data)
+	return nil
 }
 
 func WaitSparkaiOutput(conn *websocket.Conn, userId string) error {
-	var answer = ""
-
-	v, ok := mem.WSConnContainers[userId]
-	if !ok {
-		panic("Id为" + userId + "的用户不在线")
-	}
-
-	//获取返回的数据
 	for {
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
@@ -174,30 +193,4 @@ func NeedCallFunc(str string) (string, bool) {
 		}
 	}
 	return "", false
-}
-
-// 生成参数
-func GenParams1(appid string, uid string, chat_id string, messages []model.Message, isRegistry bool) map[string]interface{} {
-	data := map[string]interface{}{
-		"header": map[string]interface{}{
-			"app_id": appid,
-			"uid":    uid,
-		},
-		"parameter": map[string]interface{}{
-			"chat": map[string]interface{}{
-				"domain":      "generalv3.5",
-				"temperature": float64(0.5),
-				"top_k":       int64(4),
-				"max_tokens":  int64(8192),
-				"chat_id":     chat_id,
-			},
-		},
-		"payload": map[string]interface{}{
-			"message": map[string]interface{}{
-				"text": messages,
-			},
-		},
-	}
-
-	return data
 }

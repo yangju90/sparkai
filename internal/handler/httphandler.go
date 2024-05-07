@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"sparkai/internal/sparkaiservice"
+	"sparkai/internal/io"
 	"sparkai/model"
 	"sparkai/model/constant"
 	"sparkai/model/mem"
@@ -32,7 +32,7 @@ func HandleHttpRequest(w http.ResponseWriter, r *http.Request) {
 				v.ImageData = body.ImageData
 
 				// 1.调用sparkai
-				if e := sparkaiservice.Wsservice(userId); e != nil {
+				if e := io.Wsservice(userId); e != nil {
 					resp = model.Faild(e)
 				} else {
 					resp = model.Success()
