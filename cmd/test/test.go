@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	url := "http://192.168.8.232:11434/api/chat"
+	url := "http://192.168.8.232:31434/api/chat"
 
 	body := qwen.NewOllamaReqBody()
 	bytesBody, _ := json.Marshal(body)

@@ -13,5 +13,5 @@ type OllamaRespBody struct {
 	EvalCount          int16  `json:"eval_count"`
 	EvalDuration       int64  `json:"eval_duration"`
 
-	Messages []model.Message `json:"messages"`
+	Message model.Message `json:"messages"`
 }
