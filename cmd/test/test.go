@@ -40,7 +40,11 @@ func main() {
 
 			var respBody qwen.OllamaRespBody
 			err = json.Unmarshal([]byte(chunked), &respBody)
+			if err != nil {
+				log.Panicln(err)
+			}
 			log.Println(chunked)
+
 		}
 	} else {
 		respContent, err := io.ReadAll(resp.Body)

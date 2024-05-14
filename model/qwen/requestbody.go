@@ -13,7 +13,7 @@ type OllamaReqBody struct {
 
 func NewOllamaReqBody() OllamaReqBody {
 	request := OllamaReqBody{
-		Model:  "qwen:7b",
+		Model:  "qwen:14b",
 		Stream: true,
 		Messages: []model.Message{
 			{
@@ -21,6 +21,50 @@ func NewOllamaReqBody() OllamaReqBody {
 				Content: "你是谁？",
 			},
 		},
+	}
+
+	return request
+}
+
+func CreateHistoryOllamaReqBody(messages []model.Message) OllamaReqBody {
+	request := OllamaReqBody{
+		Model:    "qwen:14b",
+		Stream:   true,
+		Messages: messages,
+	}
+
+	return request
+}
+
+func CreateNewOllamaReqBody(messages []model.Message) OllamaReqBody {
+
+	current := []model.Message{
+		messages[0],
+		messages[len(messages)-1],
+	}
+
+	request := OllamaReqBody{
+		Model:    "qwen:14b",
+		Stream:   true,
+		Messages: current,
+	}
+
+	return request
+}
+
+func CreateNewOllamaReqBodyWithGeneralPrompt(messages []model.Message) OllamaReqBody {
+	current := []model.Message{
+		{
+			Role:    constant.SYSTEM,
+			Content: constant.FuncPromptConfig,
+		},
+		messages[len(messages)-1],
+	}
+
+	request := OllamaReqBody{
+		Model:    "qwen:14b",
+		Stream:   true,
+		Messages: current,
 	}
 
 	return request

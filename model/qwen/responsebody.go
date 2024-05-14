@@ -4,7 +4,7 @@ import "sparkai/model"
 
 type OllamaRespBody struct {
 	Model              string `json:"model"`
-	CreatedAt          bool   `json:"created_at"`
+	CreatedAt          string `json:"created_at"`
 	Done               bool   `json:"done"`
 	TotalDuration      int64  `json:"total_duration"`
 	LoadDuration       int64  `json:"load_duration"`
@@ -13,5 +13,5 @@ type OllamaRespBody struct {
 	EvalCount          int16  `json:"eval_count"`
 	EvalDuration       int64  `json:"eval_duration"`
 
-	Message model.Message `json:"messages"`
+	Message model.Message `json:"message"`
 }

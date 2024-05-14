@@ -14,6 +14,7 @@ import (
 	"sparkai/model/constant"
 	"sparkai/model/mem"
 	"sparkai/model/qwen"
+	"strconv"
 	"strings"
 )
 
@@ -21,17 +22,16 @@ import (
 
 func Wsservice(userId string) error {
 	if v, ok := mem.WSConnContainers[userId]; ok {
-
-		url := "http://192.168.8.232:11434/api/chat"
-
 		var answer = ""
 
-		body := qwen.NewOllamaReqBody()
+		body := qwen.CreateNewOllamaReqBody(v.Messages)
+		log.Println(v.Messages)
+
 		bytesBody, _ := json.Marshal(body)
 
-		resp, err := http.Post(url, "application/json", bytes.NewReader(bytesBody))
+		resp, err := http.Post(constant.WssConfig.HostUrl, "application/json", bytes.NewReader(bytesBody))
 		if err != nil {
-			fmt.Println("Error:", err)
+			log.Println("Error:", err)
 			return err
 		}
 		defer resp.Body.Close()
@@ -70,6 +70,7 @@ func Wsservice(userId string) error {
 					}
 				}
 				wsResponse.Content = respBody.Message.Content
+				answer += wsResponse.Content
 
 				// answer 添加， content改写
 				if wsResponse.Status == 0 {
@@ -92,6 +93,10 @@ func Wsservice(userId string) error {
 						tmp = ""
 					}
 					textByteData, err := json.Marshal(wsResponse)
+
+					log.Println("funcName:" + funcName)
+					log.Println("needCall:" + strconv.FormatBool(needCall))
+
 					if err == nil {
 						if !needCall {
 							if e := v.Send(textByteData); e != nil {
@@ -99,13 +104,14 @@ func Wsservice(userId string) error {
 							}
 						}
 						wsResponse.Content = ""
-						if wsResponse.Status == 2 {
+						if wsResponse.Status == 2 || needCall {
 							if needCall {
 								funcerr := functionsProcess.ChoiceFuntionCall(funcName, userId)
 								if funcerr != nil {
 									wsResponse.Content = answer + ",功能调用失败！"
 								}
-								answer = ""
+								// function 功能调用，清除answer内容
+								// answer = ""
 							}
 							wsResponse.Status = 9
 							ccc, _ := json.Marshal(wsResponse)
@@ -128,6 +134,8 @@ func Wsservice(userId string) error {
 			return errors.New("错误的返回, Not Chunked response!")
 		}
 
+		log.Println(answer)
+
 		if len(answer) != 0 {
 			v.AppendMessage(answer, constant.ASSISTANT)
 		}
@@ -143,14 +151,11 @@ func NeedCallFunc(str string) (string, bool) {
 	if string(tmp[0]) != "【" && string(tmp[len(tmp)-1]) != "】" {
 		return "", false
 	}
-
 	re := regexp.MustCompile(`【(.*?)】`)
 	matches := re.FindStringSubmatch(str)
 	if len(matches) > 1 {
 		log.Println("step 1:" + matches[1])
 		funcMsg := strings.Split(matches[1], " ")
-		log.Println(len(funcMsg))
-		log.Println(funcMsg)
 		if len(funcMsg) == 2 {
 			if funcMsg[0] == "功能调度" {
 				return funcMsg[1], true
