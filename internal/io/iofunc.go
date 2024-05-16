@@ -14,7 +14,6 @@ import (
 	"sparkai/model/constant"
 	"sparkai/model/mem"
 	"sparkai/model/qwen"
-	"strconv"
 	"strings"
 )
 
@@ -93,9 +92,6 @@ func Wsservice(userId string) error {
 						tmp = ""
 					}
 					textByteData, err := json.Marshal(wsResponse)
-
-					log.Println("funcName:" + funcName)
-					log.Println("needCall:" + strconv.FormatBool(needCall))
 
 					if err == nil {
 						if !needCall {
