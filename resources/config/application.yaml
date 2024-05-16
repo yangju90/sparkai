@@ -1,0 +1,4 @@
+hostUrl: http://192.168.8.232:31434/api/chat
+appid: xxxxx
+apiSecret: xxxxx
+apiKey: xxxxx
