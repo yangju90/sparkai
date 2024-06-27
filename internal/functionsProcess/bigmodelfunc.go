@@ -16,7 +16,7 @@ import (
 
 func BigModelFunc(userId string) (string, error) {
 	if v, ok := mem.WSConnContainers[userId]; ok {
-		body := qwen.CreateNewOllamaReqBodyWithGeneralPrompt(v.Messages)
+		body := qwen.CreateNewQwen2ReqBodyWithGeneralPrompt(v.Messages)
 		bytesBody, _ := json.Marshal(body)
 
 		resp, err := http.Post(constant.WssConfig.HostUrl, "application/json", bytes.NewReader(bytesBody))
@@ -41,7 +41,7 @@ func BigModelFunc(userId string) (string, error) {
 					return "", err
 				}
 
-				var respBody qwen.OllamaRespBody
+				var respBody qwen.Qwen2RespBody
 				err = json.Unmarshal([]byte(chunked), &respBody)
 				if err != nil {
 					return "", err

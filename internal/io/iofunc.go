@@ -23,7 +23,7 @@ func Wsservice(userId string) error {
 	if v, ok := mem.WSConnContainers[userId]; ok {
 		var answer = ""
 
-		body := qwen.CreateNewOllamaReqBody(v.Messages)
+		body := qwen.CreateNewQwen2ReqBody(v.Messages)
 		log.Println(v.Messages)
 
 		bytesBody, _ := json.Marshal(body)
@@ -53,10 +53,14 @@ func Wsservice(userId string) error {
 					return err
 				}
 
-				var respBody qwen.OllamaRespBody
+				var respBody qwen.Qwen2RespBody
 				err = json.Unmarshal([]byte(chunked), &respBody)
 				if err != nil {
 					return err
+				}
+
+				if index == 0 && len(respBody.Message.Content) == 0 {
+					continue
 				}
 
 				if index == 0 {

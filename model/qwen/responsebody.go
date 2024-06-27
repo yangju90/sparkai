@@ -15,3 +15,8 @@ type OllamaRespBody struct {
 
 	Message model.Message `json:"message"`
 }
+
+type Qwen2RespBody struct {
+	Done    bool          `json:"done"`
+	Message model.Message `json:"message"`
+}

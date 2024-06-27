@@ -5,6 +5,7 @@ import (
 	"log"
 	"sparkai/image/subImage"
 	"sparkai/internal/cloudwalkservice"
+	"sparkai/internal/vqaservice"
 	"sparkai/model"
 	"sparkai/model/mem"
 	"strconv"
@@ -33,11 +34,9 @@ func ChoiceFuntionCall(name string, userId string) error {
 		b := perImageProcess(userId)
 		if b {
 			sendCallFunctionSignal(IMAGE_UNDERSTANDING, userId)
-			imageUnderstanding, err := cloudwalkservice.Service(userId)
+			_, err := vqaservice.Service(userId)
 			if err != nil {
 				return err
-			} else {
-				resErr = sendMsg(userId, imageUnderstanding, "", 2)
 			}
 		} else {
 			_, resErr = BigModelFunc(userId)
