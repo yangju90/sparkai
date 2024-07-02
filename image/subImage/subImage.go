@@ -23,7 +23,7 @@ func SaveImagePic(base64Data string, uuid string) {
 		return
 	}
 
-	path := "E:/goconfig/static/object/" + uuid + ".png"
+	path := "D:/goconfig/static/object/" + uuid + ".png"
 	err = EncodeImage(path, img, "png")
 	if err != nil {
 		fmt.Println("Error encoding image:", err)
@@ -47,7 +47,7 @@ func ToResizeSubImage(base64Data string, uuid string, box []int) {
 	// 调整截取后的图片大小
 	resizedImg := resize.Resize(100, 0, croppedImg, resize.Lanczos3)
 
-	path := "E:/goconfig/static/object/" + uuid + ".png"
+	path := "D:/goconfig/static/object/" + uuid + ".png"
 
 	err = EncodeImage(path, resizedImg, "png")
 	if err != nil {
@@ -143,7 +143,7 @@ func DrawRectanglePic(base64Data string, uuid string, boxes map[string][]interfa
 	}
 	// dc.DrawRectangle(float64(box[0]), float64(box[1]), float64(box[2])-float64(box[0]), float64(box[3])-float64(box[1]))
 
-	path := "E:/goconfig/static/object/" + uuid + ".png"
+	path := "D:/goconfig/static/object/" + uuid + ".png"
 
 	if err := dc.SavePNG(path); err != nil {
 		return err

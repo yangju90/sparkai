@@ -68,6 +68,9 @@ func Service(userId string) (res string, err error) {
 					return "", e
 				}
 
+				if respBody.Done {
+					break
+				}
 			}
 		} else {
 			return "", errors.New("错误的返回, Not Chunked response!")

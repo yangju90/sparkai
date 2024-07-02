@@ -17,7 +17,7 @@ func init() {
 }
 
 func readSystemPrompt(fileName string, content *string) {
-	path := "E:/goconfig/system/" + fileName
+	path := "D:/goconfig/system/" + fileName
 
 	_, err := os.Stat(path)
 	if err != nil {

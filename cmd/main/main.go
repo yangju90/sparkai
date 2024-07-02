@@ -19,7 +19,7 @@ func main() {
 	log.Println("当前执行目录：", dir)
 
 	router := mux.NewRouter()
-	staticDir := http.FileServer(http.Dir("E:/goconfig/static"))
+	staticDir := http.FileServer(http.Dir("D:/goconfig/static"))
 	router.HandleFunc("/user/question", handler.HandleHttpRequest).Methods("POST")
 	router.HandleFunc("/ws/answer", handler.HandleWebSocketConnection)
 	router.PathPrefix("/image/").Handler(http.StripPrefix("/image/", staticDir))

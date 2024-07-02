@@ -13,7 +13,7 @@ var FunctionsConfig map[string]interface{}
 func init() {
 	log.Println("init FunctionsConfig ......")
 
-	path := "E:/goconfig/function" 
+	path := "D:/goconfig/function"
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		log.Println("Read local file error:", err)
